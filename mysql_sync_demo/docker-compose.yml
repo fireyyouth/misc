@@ -1,0 +1,19 @@
+version: "3"
+
+services:
+  master.srv:
+    image: "mysql:8.2.0"
+    volumes:
+      - ./master.cnf:/etc/my.cnf
+    ports:
+      - "3306:3306"
+    environment:
+      - MYSQL_ALLOW_EMPTY_PASSWORD=1
+  slave.srv:
+    image: "mysql:8.2.0"
+    volumes:
+      - ./slave.cnf:/etc/my.cnf
+    ports:
+      - "3307:3306"
+    environment:
+      - MYSQL_ALLOW_EMPTY_PASSWORD=1

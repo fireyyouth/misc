@@ -1,0 +1,6 @@
+[mysqld]
+server-id=1
+log-bin=black-bin.log
+datadir=/home/billy/mysql/master/data
+innodb_flush_log_at_trx_commit=1
+sync_binlog=1
