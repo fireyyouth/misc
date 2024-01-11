@@ -8,7 +8,8 @@ sh +x main.sh
 ## expected output
 ```
 osboxes@osboxes:~/misc/mysql_sync_demo$
-osboxes@osboxes:~/misc/mysql_sync_demo$ sh -x main.sh mysql -u root --protocol tcp --port 3306
+osboxes@osboxes:~/misc/mysql_sync_demo$ sh -x main.sh
++ mysql -u root --protocol tcp --port 3306
 + mysql -u root --protocol tcp --port 3307
 + mysql -u root --protocol tcp --port 3306
 + sleep 5
