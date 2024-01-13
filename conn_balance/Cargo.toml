@@ -1,0 +1,19 @@
+[package]
+name = "conn_balance"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+mio = { version = "0.8.10", features = ["os-poll", "net"] }
+socket2 = { version = "0.5.5", features = ["all"] }
+tokio = { version = "1.35.1", features = ["full"] }
+
+[[bin]]
+name = "server"
+path = "src/server.rs"
+
+[[bin]]
+name = "client"
+path = "src/client.rs"
