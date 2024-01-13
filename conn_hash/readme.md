@@ -1,5 +1,5 @@
 ## theory
-hrw will have *1 / node* keys remapped after addition or deletion
+hrw will have **1 / node** keys remapped after addition or deletion
 
 ## build
 ```
