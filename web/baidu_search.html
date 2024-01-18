@@ -1,12 +1,44 @@
 <style>
     body {
         text-align: center;
+        margin: 0;
     }
+
+    #wrapper {
+        position: sticky;
+        top: -1px;
+        padding-top: 1px;
+        background: #FFF;
+    }
+
+    .wrapper-inner {
+        margin: 0;
+    }
+
+    .wrapper-inner-fixed {
+        margin-top: 20px;
+        margin-bottom: 20px;
+        display: flex;
+        border-bottom-color: black;
+        box-shadow: 0 10px 10px -10px black;
+    }
+
+    .logo-small {
+        display: none;
+    }
+
+    .logo-small-fixed {
+        display: initial;
+        margin-left: 100px;
+        margin-right: 20px;
+    }
+
     #search_form {
         height: 44px;
         display: flex;
         justify-content: center;
     }
+
     #search_input {
         width: 654px;
         height: 100%;
@@ -15,9 +47,11 @@
         border-right-width: 0;
         outline: none;
     }
+
     #search_input:focus {
         border-color: #4e6ef2;
     }
+
     #search_button {
         width: 108px;
         height: 100%;
@@ -28,12 +62,58 @@
         border: none;
     }
 </style>
+
+
 <html>
-    <body>
-        <img src="baidu_logo.png" width="270" height="129">
-        <form id="search_form">
-            <input id="search_input">
-            <button id="search_button">百度一下</button>
-        </form>
-    </body>
+
+<body>
+    <img src="baidu_logo.png" width="270" height="129">
+    <div id="wrapper">
+        <div id="wrapper_inner" class="wrapper-inner">
+            <img id="logo_small" src="baidu_logo_small.png" width="101" height="100%" class="logo-small">
+            <form id="search_form">
+                <input id="search_input">
+                <button id="search_button">百度一下</button>
+            </form>
+        </div>
+    </div>
+</body>
+<div>
+    <img src="baidu_news.png">
+</div>
+
 </html>
+
+<script>
+    function sticky_child(id, static_class, fixed_class) {
+        return {
+            elem: document.getElementById(id),
+            static_class: static_class,
+            fixed_class: fixed_class
+        };
+    }
+
+    let stage = [
+        sticky_child('logo_small', 'logo-small', 'logo-small-fixed'),
+        sticky_child('wrapper_inner', 'wrapper-inner', 'wrapper-inner-fixed')
+    ];
+
+    function sticky_callback(e) {
+        let fixed = e.intersectionRatio < 1;
+        for (let item of stage) {
+            if (fixed) {
+                item.elem.classList.replace(item.static_class, item.fixed_class);
+            } else {
+                item.elem.classList.replace(item.fixed_class, item.static_class);
+            }
+        }
+    }
+
+    const observer = new IntersectionObserver(
+        ([e]) => sticky_callback(e),
+        { threshold: [1] }
+    );
+
+    let wrapper = document.getElementById('wrapper');
+    observer.observe(wrapper);
+</script>
