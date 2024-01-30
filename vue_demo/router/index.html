@@ -1,0 +1,107 @@
+<html>
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+
+        <style>
+            body {
+                margin: 0;
+            }
+            #app {
+                display: flex;
+                height: 100vh;
+            }
+            .menu {
+                box-shadow: 5px 5px 10px lightgray;
+                list-style-type: none;
+            }
+            .menu-item {
+                padding: 5px;
+                border: 1px solid lightgray;
+            }
+            .menu-item:hover {
+                background-color: lightgray;
+                cursor: pointer;
+            }
+            .menu-link {
+                text-decoration: none;
+            }
+        </style>
+        <script src="vue.global.js"></script>
+        <script src="vue_router.js"></script>
+    </head>
+    <body>
+        <template id="profile">
+            欢迎您, {{ nickname }}
+        </template>
+
+
+        <template id="content">
+            <ul>
+                <li v-for="item in item_list">
+                    {{ item }}
+                </li>
+            </ul>
+        </template>
+
+        <div id="app">
+            <div class="menu">
+                <li class="menu-item" @click="goto_home">
+                    主页
+                </li>
+                <li class="menu-item" @click="goto_profile">
+                    用户信息
+                </li>
+            </div>
+            <router-view></router-view>
+        </div>
+    </body>
+
+    <script>
+        const routes = [
+            {
+                path: '/profile',
+                component: {
+                    template: '#profile',
+                    data() {
+                        return {
+                            nickname: '管理员'
+                        }
+                    }
+                }
+            },
+            {
+                path: '/',
+                component: {
+                    template: '#content',
+                    data() {
+                        return {
+                            item_list: ['新闻1', '新闻2', '新闻3', '新闻4']
+                        }
+                    }
+                }
+            },
+        ];
+
+        const router = VueRouter.createRouter({
+            history: VueRouter.createWebHistory(),
+            routes,
+        });
+
+
+        var app = Vue.createApp({
+            methods: {
+                goto_profile() {
+                    this.$router.push('/profile');
+                },
+                goto_home() {
+                    this.$router.push('/');
+                },
+            }
+        });
+
+        app.use(router);
+
+        app.mount("#app");
+
+    </script>
+</html>
