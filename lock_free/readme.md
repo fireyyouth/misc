@@ -1,7 +1,8 @@
 # lock free rule list
 ## in-place update version
 little overhead, but possibly unexpected behavior
-- example:
+- unexpected behavior example:
+
 worker executing 2
 ```
 1 2 3
@@ -23,7 +24,7 @@ worker continue match to second 4
         ^
 ```
 
-second 4 could never be matched from user's perspective
+*second 4 could never be matched from user's perspective*
 
 ## copy-on-write version
 no unexpected behavior, but some copy overhead
