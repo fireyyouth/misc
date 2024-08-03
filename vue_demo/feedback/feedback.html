@@ -39,24 +39,26 @@
                 ]
             }
         },
-        methods: {
+        computed: {
             effective_level() {
                 let level = this.hover_level;
                 if (level === null) {
                     level = this.fixed_level;
                 }
                 return level;
-            },
+            }
+        },
+        methods: {
             star_class(index) {
                 let r = ['fa', 'fa-star', 'largest-font'];
-                let level = this.effective_level();
+                let level = this.effective_level;
                 if (level !== null && index <= level) {
                     r.push('checked')
                 }
                 return r;
             },
             detail() {
-                let level = this.effective_level();
+                let level = this.effective_level;
                 if (level !== null) {
                     return this.level_detail[level];
                 }
