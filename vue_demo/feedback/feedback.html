@@ -11,7 +11,11 @@
 
 <div id="app">
     <div>
-        <span v-for="(item, index) in level_detail" :key="item" :class="star_class(index)"  :data-level="index" @mouseover="set_hover_level(index)" @mouseout="reset_hover_level" @click="set_fixed_level(index)"></span>
+        <span v-for="(item, index) in level_detail" :key="item"
+            :class="star_class(index)"
+            @mouseover="set_hover_level(index)"
+            @mouseout="reset_hover_level()"
+            @click="set_fixed_level(index)"></span>
     </div>
     <div class="largest-font">
         {{ detail() }}
