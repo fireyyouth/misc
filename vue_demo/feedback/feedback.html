@@ -1,0 +1,76 @@
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+
+<style>
+    .star {
+        content: '\f0006'
+    }
+    .largest-font {
+        font-size: xx-large;
+    }
+    .checked {
+        color: orange;
+    }
+</style>
+
+<div id="app">
+    <div>
+        <span v-for="(item, index) in level_detail" :key="item" :class="star_class(index)"  :data-level="index" @mouseover="set_hover_level(index)" @mouseout="reset_hover_level" @click="set_fixed_level(index)"></span>
+    </div>
+    <div class="largest-font">
+        {{ detail() }}
+    </div>
+</div>
+
+<script type="module">
+    import * as vue from 'https://unpkg.com/vue@3/dist/vue.esm-browser.js';
+
+    let app = vue.createApp({
+        data() {
+            return {
+                fixed_level: null,
+                hover_level: null,
+                level_detail: [
+                    "terrible",
+                    "not good",
+                    "ok",
+                    "nice",
+                    "perfect"
+                ]
+            }
+        },
+        methods: {
+            effective_level() {
+                let level = this.hover_level;
+                if (level === null) {
+                    level = this.fixed_level;
+                }
+                return level;
+            },
+            star_class(index) {
+                let r = ['fa', 'fa-star', 'largest-font'];
+                let level = this.effective_level();
+                if (level !== null && index <= level) {
+                    r.push('checked')
+                }
+                return r;
+            },
+            detail() {
+                let level = this.effective_level();
+                if (level !== null) {
+                    return this.level_detail[level];
+                }
+                return '';
+            },
+            set_hover_level(level) {
+                this.hover_level = level
+            },
+            reset_hover_level() {
+                this.hover_level = null;
+            },
+            set_fixed_level(level) {
+                this.fixed_level = level
+            }
+        }
+    });
+    app.mount('#app');
+</script>
