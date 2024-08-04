@@ -1,0 +1,122 @@
+<body>
+    <!-- outputview component -->
+    <div>
+        <style>
+            .bubble {
+                width: 300px;
+                height: 100px;
+                border-radius: 10px;
+                background-color: aquamarine;
+            }
+        
+            .message {
+                position: relative;
+                margin-left: 20px;
+                padding: 10px;
+            }
+        
+            .author_content {
+                display: flex;
+            }
+        
+            .author {
+                width: 100px;
+            }
+        
+            .output {
+                border: lightblue solid 2px;
+                height: 600px;
+                overflow: scroll;
+            }
+        </style>
+    
+        <template id="output_template">
+            <div class="output" ref="view">
+                <div v-for="msg in messages" class="message">
+                    {{ msg.date }}
+                    <div class="author_content">
+                        <div class="author">
+                            {{ msg.author }}:
+                        </div>
+                        <div class="bubble">
+                            {{ msg.content }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </template>
+    </div>
+    
+    <!-- main app -->
+    <div>
+        <style>
+            .input {
+                display: flex;
+        }
+        </style>
+        <div id="app">
+            <output-view :messages="messages" ></output-view>
+            <div class="input">
+                <textarea v-model="stage"></textarea>
+                <button @click="submit">send</button>
+            </div>
+        </div>
+    </div>
+    
+    <script type="module">
+        import * as vue from 'https://unpkg.com/vue@3/dist/vue.esm-browser.js';
+    
+        class Message {
+            constructor(author, date, content) {
+                this.date = date
+                this.author = author
+                this.content = content
+            }
+        }
+    
+        let OutputView = {
+            template: '#output_template',
+            props: ['messages'],
+            updated() {
+                this.$refs.view.scrollTop = this.$refs.view.scrollHeight;
+            },
+            mounted() {
+                this.$refs.view.scrollTop = this.$refs.view.scrollHeight;
+            }
+        }
+
+        let app = vue.createApp({
+            data() {
+                return {
+                    messages: this.init_messages(),
+                    profile: {
+                        name: 'customer'
+                    },
+                    stage: ''
+                }
+            },
+            components: {
+                OutputView
+            },
+            methods: {
+                init_messages() {
+                    let content = [
+                        'hello',
+                        'hi',
+                        'nice to meet you',
+                        'i am find',
+                        'how is your day',
+                        'good mordning',
+                        'how have you been'
+                    ]
+                    return content.map((s) => new Message('seller', (new Date()).toUTCString(), s))
+                },
+                submit() {
+                    this.messages.push(new Message(this.profile.name, (new Date()).toUTCString(), this.stage));
+                    this.stage = ''
+                }
+            }
+        });
+        app.mount('#app')
+    </script>
+</body>
