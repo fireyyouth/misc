@@ -52,13 +52,22 @@
         <style>
             .input {
                 display: flex;
+                position: relative;
+            }
+            .stage {
+                width: 90%;
+            }
+            .submit {
+                position: absolute;
+                right: 0;
+                height: 100%;
             }
         </style>
         <template id="dialog_template">
             <output-view :prop_messages="messages" ></output-view>
             <div class="input">
-                <textarea v-model="stage"></textarea>
-                <button @click="submit">send</button>
+                <textarea v-model="stage" class="stage"></textarea>
+                <button @click="submit" class="submit">send</button>
             </div>
         </template>
     </div>
@@ -75,13 +84,16 @@
             }
             .contact {
                 border: 1px solid lightgray;
+                display: inline-block;
+                width: 100%;
             }
             .contact:hover {
                 background-color: lightgray;
             }
             .active-contact {
-                border: 1px solid lightgray;
                 background-color: lightskyblue;
+                display: inline-block;
+                width: 100%;
             }
         </style>
         <div id="app" class="chat-app">
