@@ -64,7 +64,7 @@
             }
         </style>
         <template id="dialog_template">
-            <output-view :prop_messages="messages" ></output-view>
+            <output-view :prop_messages="messages"></output-view>
             <div class="input">
                 <textarea v-model="stage" class="stage"></textarea>
                 <button @click="submit" class="submit">send</button>
@@ -72,10 +72,10 @@
         </template>
     </div>
 
-    <!-- app -->
+    <!-- chat panel template -->
     <div>
         <style>
-            .chat-app {
+            .chat-panel {
                 display: flex;
             }
             .contact-list {
@@ -96,24 +96,69 @@
                 width: 100%;
             }
         </style>
-        <div id="app" class="chat-app">
-            <ul class="contact-list">
-                <li v-for="name in Object.keys(message_history)" @click="set_current_contact(name)">
-                    <span :class=" (name == current_contact)? 'active-contact': 'contact' ">
-                        {{ name }}
-                    </span>
-                </li>
-            </ul>
-            <div>
-                <keep-alive>
-                    <chat-dialog :prop_messages="message_history[current_contact]" :prop_name="current_contact" :key="current_contact"></chat-dialog>
-                </keep-alive>
+        <template id="chat_panel_template">
+            <div class="chat-panel">
+                <ul class="contact-list">
+                    <li v-for="name in Object.keys(message_history)" @click="set_current_contact(name)">
+                        <span :class=" (name == current_contact)? 'active-contact': 'contact' ">
+                            {{ name }}
+                        </span>
+                    </li>
+                </ul>
+                <div>
+                    <keep-alive>
+                        <chat-dialog
+                            :prop_messages="message_history[current_contact]"
+                            :prop_name="current_contact"
+                            :key="current_contact">
+                        </chat-dialog>
+                    </keep-alive>
+                </div>
+            </div>
+        </template>
+    </div>
+
+
+    <div>
+        <template id="login_form">
+            <dialog ref="fail_dialog">
+                {{ error_msg }}
+                <form method="dialog">
+                    <button>ok</button>
+                </form>
+            </dialog>
+            <label>
+                <span>username</span>
+                <input v-model="username">
+            </label>
+            <label>
+                <span>username</span>
+                <input type="password" v-model="password">
+            </label>
+            <button @click="login">
+                login
+            </button>
+        </template>
+    </div>
+
+    <!-- main app -->
+    <div>
+        <div>
+            main app
+        </div>
+        <div id="app">
+            <div v-if="current_panel == 'LoginForm'" >
+                <login-form @auth-success="set_chat_panel"></login-form>
+            </div>
+            <div v-else>
+                <chat-panel></chat-panel>
             </div>
         </div>
     </div>
+
     <script type="module">
-        import * as vue from 'https://unpkg.com/vue@3/dist/vue.esm-browser.js';
-    
+        import * as vue from 'https://unpkg.com/vue@3/dist/vue.esm-browser.js';    
+
         class Message {
             constructor(author, date, content) {
                 this.date = date
@@ -138,6 +183,7 @@
             props: ['prop_messages', 'prop_name'],
             data() {
                 return {
+                    event_source: this.init_event_source(),
                     messages: this.init_messages(),
                     stage: ''
                 }
@@ -146,21 +192,92 @@
                 OutputView
             },
             methods: {
+                init_event_source() {
+                    if (this.prop_name == 'public') {
+                        let event_source = new EventSource('/message_events')
+                        let this_component = this;
+                        event_source.onmessage = (e) => {
+                            let message_json = JSON.parse(e.data)
+                            let message = new Message(message_json.username, (new Date()).toUTCString(), message_json.content)
+                            this_component.messages.push(message);
+                        }
+                        event_source.onerror = (e) => {
+                            let message = new Message('[system]', (new Date()).toUTCString(), e.type)
+                            this_component.messages.push(message);
+                        }
+                        return event_source
+                    } else {
+                        return null
+                    }
+                },
                 init_messages() {
                     return this.prop_messages.map((s) => new Message(this.prop_name, (new Date()).toUTCString(), s))
                 },
-                submit() {
-                    this.messages.push(new Message('me', (new Date()).toUTCString(), this.stage));
-                    this.stage = ''
+                async submit() {
+                    if (this.prop_name == 'public') {
+                        let rsp = await fetch('/send_message', {
+                            method: 'POST',
+                            headers: {
+                                "Content-Type": "application/json",
+                            },
+                            body: JSON.stringify({
+                                'content': this.stage
+                            })
+                        })
+                        this.stage = ''
+                        if (rsp.status != 200) {
+                            let body = await rsp.text()
+                            this.messages.push(new Message('[system]', (new Date()).toUTCString(), `${rsp.status}:${body}`));
+                        }
+                    } else {
+                        this.messages.push(new Message('me', (new Date()).toUTCString(), this.stage));
+                        this.stage = ''
+                    }
                 }
             }
         }
 
-        let app = vue.createApp({
+        let LoginForm = {
+            template: '#login_form',
+            data() {
+                return {
+                    'username': 'frank',
+                    'password': 'password',
+                    'error_msg': ''
+                }
+            },
+            emits: ['authSuccess'],
+            methods: {
+                async login() {
+                    console.log('clicked')
+                    let auth_rsp = await fetch('/auth', {
+                        method: 'POST',
+                        headers: {
+                            "Content-Type": "application/json",
+                        },
+                        body: JSON.stringify({
+                            'username': this.username,
+                            'password': this.password,
+                        })
+                    })
+                    if (auth_rsp.status != 200) {
+                        this.error_msg = await auth_rsp.text()
+                        this.$refs.fail_dialog.showModal()
+                    } else {
+                        this.$emit('authSuccess')
+                    }
+                }
+            }
+        }
+
+        let ChatPanel = {
+            template: '#chat_panel_template',
             data() {
                 return {
                     current_contact: 'boss',
+                    event_source: null,
                     message_history: {
+                        'public': [],
                         'boss': [
                             'hello',
                             'hi',
@@ -186,7 +303,25 @@
                     this.current_contact = s
                 }
             }
-        });
-        app.mount('#app')
+        }
+
+        let main_app = vue.createApp({
+            data() {
+                return {
+                    current_panel: 'LoginForm'
+                }
+            },
+            methods: {
+                set_chat_panel() {
+                    console.log("setting chat panel")
+                    this.current_panel = 'ChatPanel'
+                }
+            },
+            components: {
+                LoginForm,
+                ChatPanel
+            }
+        })
+        main_app.mount('#app')
     </script>
 </body>
