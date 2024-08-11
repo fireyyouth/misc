@@ -1,31 +1,33 @@
+<meta name="viewport" content="width=device-width" />
+
+<style>
+    body {
+        width: 100%;
+        height: 100%;
+        margin: 0;
+    }
+</style>
 <body>
     <!-- outputview component -->
     <div>
         <style>
             .bubble {
-                width: 300px;
-                height: 100px;
-                border-radius: 10px;
+                border-radius: 0.5em;
                 background-color: aquamarine;
+                padding: 0.5em;
             }
         
             .message {
-                position: relative;
-                margin-left: 20px;
-                padding: 10px;
+                padding: 1em;
             }
         
             .author_content {
                 display: flex;
-            }
-        
-            .author {
-                width: 100px;
+                flex-direction: column;
             }
         
             .output {
                 border: lightblue solid 2px;
-                height: 600px;
                 overflow: scroll;
             }
         </style>
@@ -35,7 +37,7 @@
                 <div v-for="msg in prop_messages" class="message">
                     {{ msg.date }}
                     <div class="author_content">
-                        <div class="author">
+                        <div>
                             {{ msg.author }}:
                         </div>
                         <div class="bubble">
@@ -50,24 +52,29 @@
     <!-- dialog template -->
     <div>
         <style>
+            .chat-dialog {
+                display: flex;
+                flex-direction: column;
+                justify-content: end;
+            }
+            .output-view {
+                flex-grow: 1;
+            }
             .input {
                 display: flex;
-                position: relative;
+                align-items: stretch;
             }
             .stage {
-                width: 90%;
-            }
-            .submit {
-                position: absolute;
-                right: 0;
-                height: 100%;
+                flex-grow: 1;
             }
         </style>
         <template id="dialog_template">
-            <output-view :prop_messages="messages"></output-view>
-            <div class="input">
-                <textarea v-model="stage" class="stage"></textarea>
-                <button @click="submit" class="submit">send</button>
+            <div class="chat-dialog">
+                <output-view class="output-view" :prop_messages="messages"></output-view>
+                <div class="input">
+                    <textarea v-model="stage" class="stage" @keyup.enter="submit"></textarea>
+                    <button @click="submit">send</button>
+                </div>
             </div>
         </template>
     </div>
@@ -76,10 +83,13 @@
     <div>
         <style>
             .chat-panel {
+                width: 100%;
+                height: 100%;
                 display: flex;
+                align-items: stretch;
             }
             .contact-list {
-                width: 100px;
+                padding: 0;
                 list-style-type: none;
             }
             .contact {
@@ -95,6 +105,9 @@
                 display: inline-block;
                 width: 100%;
             }
+            .flex-item-chat-dialog {
+                flex-grow: 1;
+            }
         </style>
         <template id="chat_panel_template">
             <div class="chat-panel">
@@ -105,55 +118,60 @@
                         </span>
                     </li>
                 </ul>
-                <div>
-                    <keep-alive>
-                        <chat-dialog
-                            :prop_messages="message_history[current_contact]"
-                            :prop_name="current_contact"
-                            :key="current_contact">
-                        </chat-dialog>
-                    </keep-alive>
-                </div>
+                <keep-alive class="flex-item-chat-dialog">
+                    <chat-dialog
+                        :prop_messages="message_history[current_contact]"
+                        :prop_name="current_contact"
+                        :key="current_contact">
+                    </chat-dialog>
+                </keep-alive>
             </div>
         </template>
     </div>
 
 
     <div>
+        <style>
+            .login-form {
+                display: flex;
+                flex-direction: column;
+            }
+        </style>
         <template id="login_form">
-            <dialog ref="fail_dialog">
-                {{ error_msg }}
-                <form method="dialog">
-                    <button>ok</button>
-                </form>
-            </dialog>
-            <label>
-                <span>username</span>
-                <input v-model="username">
-            </label>
-            <label>
-                <span>username</span>
-                <input type="password" v-model="password">
-            </label>
-            <button @click="login">
-                login
-            </button>
+            <div class="login-form">
+                <dialog ref="fail_dialog">
+                    {{ error_msg }}
+                    <form method="dialog">
+                        <button>ok</button>
+                    </form>
+                </dialog>
+                <label>
+                    <span>username</span>
+                    <input v-model="username">
+                </label>
+                <label>
+                    <span>password</span>
+                    <input type="password" v-model="password">
+                </label>
+                <button @click="login">
+                    login
+                </button>
+            </div>
         </template>
     </div>
 
     <!-- main app -->
-    <div>
-        <div>
-            main app
-        </div>
-        <div id="app">
-            <div v-if="current_panel == 'LoginForm'" >
-                <login-form @auth-success="set_chat_panel"></login-form>
-            </div>
-            <div v-else>
-                <chat-panel></chat-panel>
-            </div>
-        </div>
+    <style>
+        .app {
+            box-sizing: border-box;
+            width: 100%;
+            height: 100%;
+            padding: 0.5em;
+        }
+    </style>
+    <div id="app" class="app">
+        <login-form v-if="current_panel == 'LoginForm'" @auth-success="set_chat_panel"></login-form>
+        <chat-panel v-else></chat-panel>
     </div>
 
     <script type="module">
@@ -274,7 +292,7 @@
             template: '#chat_panel_template',
             data() {
                 return {
-                    current_contact: 'boss',
+                    current_contact: 'public',
                     event_source: null,
                     message_history: {
                         'public': [],
