@@ -8,6 +8,7 @@ import uvicorn
 import time
 import redis.asyncio as redis
 import json
+from fastapi.staticfiles import StaticFiles
 
 app = FastAPI()
 
@@ -28,11 +29,6 @@ def gen_token(username):
 
 def verify_token(token):
     return jwt.decode(token, token_config['secret'], algorithms=["HS256"])
-
-@app.get('/', response_class=HTMLResponse)
-async def index():
-    return open('chat.html').read()
-
 
 class Credential(BaseModel):
     username: str
@@ -77,4 +73,6 @@ async def events(chat_token: Annotated[str, Cookie()]):
 
     return EventSourceResponse(message_events())
 
-uvicorn.run(app, host="127.0.0.1", port=8000)
+app.mount("/", StaticFiles(directory="frontend/dist", html=True), name="frontend")
+
+uvicorn.run(app, host="0.0.0.0", port=8000)
