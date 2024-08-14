@@ -1,0 +1,166 @@
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
+
+<style>
+    html {
+        font-size: large;
+    }
+    body {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        background-color: #f2f2f2;
+        margin: 0;
+    }
+    .app {
+        width: 30rem;
+    }
+    .top-bar {
+        position: sticky;
+        top: 0;
+        background-color: whitesmoke;
+        z-index: 1;
+        padding: 1rem;
+        display: flex;
+        align-items: center;
+        color: gray;
+    }
+    .content-area {
+        margin: 0;
+        background-color: white;
+    }
+    .preview-item {
+        border-bottom: 1px solid whitesmoke;
+        padding: 1rem;
+    }
+    .from {
+        color: gray;
+        font-size: 0.7rem;
+    }
+    .preview-footer {
+        display: flex;
+        justify-content: space-around;
+        font-size: 0.8rem;
+    }
+    .clickable {
+        cursor: pointer;
+    }
+    .preview-image {
+        float: left;
+        max-width: 10rem;
+        object-fit: contain;
+        margin: 1px;
+    }
+    .image-end {
+        clear: both;
+    }
+    .profile-image {
+        max-width: 2.5rem;
+        max-height: 2.5rem;
+        border-radius: 50%;
+    }
+    .preview-item-header {
+        display: flex;
+    }
+    .preview-item-images {
+        
+    }
+    dialog {
+        margin-bottom: 0;
+        outline: none;
+        border: none;
+        width: 100%;
+        background-color: whitesmoke;
+        text-align: center;
+    }
+    .pop-menu-item {
+        border-bottom: 1px solid lightgray;
+    }
+    .search-icon {
+        position: absolute;
+        left: 1.2rem;
+        vertical-align: middle;
+    }
+    .search-input {
+        flex-grow: 1;
+        color: gray;
+
+        padding-left: 1.5rem;
+        font-size: 1rem;
+
+        background-color: white;
+        border-radius: 0.5rem;
+        border-style: none;
+        outline: none;
+    }
+</style>
+
+<body>
+    <div id="app" class="app">
+        <div class="top-bar">
+            <i class="fa-solid fa-magnifying-glass search-icon"></i>
+            <input class="search-input">
+        </div>
+        <dialog ref="pop_menu">
+            <div class="clickable pop-menu-item">comment</div>
+            <div @click="$refs.pop_menu.close()" class="clickable">cancel</div>
+        </dialog>
+        <div class="content-area">
+            <div class="preview-item" v-for="item in preview_list">
+                <div class="preview-item-header">
+                    <img src="https://img2.baidu.com/it/u=2309255119,833013043&fm=253&fmt=auto&app=138&f=JPEG?w=500&h=501" class="profile-image">
+                    <div>
+                        <div>Donald Trump</div>
+                        <div class="from">yesterday 19:00 from New York</div>
+                    </div>
+                </div>
+                <div>
+                    {{ item.content }}
+                    <a v-if="item.hash" :href="'/content/' + item.hash">full</a>
+                </div>
+                <div class="preview-item-images">
+                    <img v-for="img in item.img" :src="img" class="preview-image">
+                </div>
+                <div class="image-end"></div>
+                <div class="preview-footer">
+                    <div class="clickable">
+                        <i class="fa-regular fa-message"></i>
+                        <span>100</span>
+                    </div>
+                    <div class="clickable">
+                        <i class="fa-solid fa-rotate"></i>
+                        <span>10</span>
+                    </div>
+                    <div class="clickable">
+                        <i class="fa-regular fa-thumbs-up"></i>
+                        <span>2</span>
+                    </div>
+                    <div class="clickable">
+                        <i class="fa-solid fa-ellipsis" @click="$refs.pop_menu.showModal()"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+
+<script type="module">
+    import * as vue from 'https://unpkg.com/vue@3/dist/vue.esm-browser.js';
+    let app = vue.createApp({
+        data() {
+            return {
+                popped: false,
+                preview_list: []
+            }
+        },
+        methods: {
+            async load_preview_list() {
+                let rsp = await fetch('/preview_list')
+                this.preview_list = await rsp.json()
+            }
+        },
+        mounted() {
+            this.load_preview_list()
+        }
+    })
+    app.mount('#app')
+</script>
