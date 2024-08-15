@@ -11,47 +11,27 @@ import json
 from fastapi.staticfiles import StaticFiles
 import hashlib
 import random
+import es
+
 
 app = FastAPI()
 
-def build_db():
-    r = {}
-    with open('data.txt') as f:
-        for line in f:
-            line = line.strip()
-            if line:
-                r[hashlib.md5(line.encode()).hexdigest()] = line
-    return r
-
-
-def build_img_db() -> list[str]:
-    with open('images.json') as f:
-        return json.load(f)
-
-data_db = build_db()
-img_db = build_img_db()
 
 @app.get('/preview_list')
 async def preview_list():
+    es_client = es.get_es()
+    es_result = await es_client.search(index=es.ES_INDEX_TWITTER_POST)
     r = []
-    for hash, content in data_db.items():
-        if len(content) > 200:
-            r.append({
-                'hash': hash,
-                'content': content[:200] + '...',
-                'img': [random.choice(img_db) for _ in range(random.randint(1, 4))]
-            })
-        else:
-            r.append({
-                'hash': None,
-                'content': content,
-                'img': [random.choice(img_db) for _ in range(random.randint(1, 4))]
-            })
+    for hit in es_result['hits']['hits']:
+        source = hit['_source']
+        source['text'] = source['text'][:200] + '...'
+        r.append(source)
     return r
 
 @app.get('/content/{hash}')
 async def content(hash):
-    return data_db[hash]
+    es_client = es.get_es()
+    return es_client.get(index=es.ES_INDEX_TWITTER_POST, id=hash)
 
 app.mount("/", StaticFiles(directory="frontend/dist", html=True), name="frontend")
 

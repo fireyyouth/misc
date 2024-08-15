@@ -29,7 +29,7 @@
         background-color: white;
     }
     .preview-item {
-        border-bottom: 1px solid whitesmoke;
+        border-bottom: 1px solid lightgray;
         padding: 1rem;
     }
     .from {
@@ -114,7 +114,7 @@
                     </div>
                 </div>
                 <div>
-                    {{ item.content }}
+                    {{ item.text }}
                     <a v-if="item.hash" :href="'/content/' + item.hash">full</a>
                 </div>
                 <div class="preview-item-images">
