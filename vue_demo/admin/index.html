@@ -1,0 +1,198 @@
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
+
+
+<style>
+    .dashboard {
+        display: flex;
+        height: 100%;
+    }
+    .menu {
+        background-color: rgb(48, 65, 86);
+        color: rgb(191, 203, 217);
+        min-width: 15rem;
+    }
+    .menu ul {
+        list-style-type: none;
+        padding: 0;
+    }
+    .menu-entry {
+        padding-left: 3rem;
+        padding-right: 3rem;
+        padding-top: 1rem;
+        padding-bottom: 1rem;
+        user-select: none;
+        position: relative;
+    }
+    .menu-entry:hover {
+        backdrop-filter: brightness(80%);   
+    }
+    .sub-menu {
+        font-size: 95%;
+    }
+    .panel {
+        flex-grow: 1;
+        background-color: whitesmoke;
+    }
+    .invisible {
+        display: none;
+    }
+    .route {
+        text-decoration: none;
+        color: inherit;
+    }
+    .rightmost {
+        position: absolute;
+        right: 1rem;
+    }
+</style>
+
+<template id="menu_node_template">
+    <div v-if="data.kids">
+        <div class="menu-entry" @click="toggle_expand()">
+            <span :style="menu_name_style()">{{ data.name }}</span>
+            <i :class="caret_class()"></i>
+        </div>
+        <ul :class=" expanded? '': 'invisible' ">
+            <li v-for="item in data.kids" class="sub-menu">
+                <menu-node :data="item" :level="level + 1"></menu-node>
+            </li>
+        </ul>
+    </div>
+    <div v-else>
+        <router-link :to="data.path" class="route">
+            <div class="menu-entry">
+                <span :style="menu_name_style()">{{ data.name }}</span>
+            </div>
+        </router-link>
+    </div>
+</template>
+
+<div id="app" class="dashboard">
+    <nav class="menu">
+        <ul>
+            <li v-for="item in items">
+                <menu-node :data="item" :level="0"></menu-node>
+            </li>
+        </ul>
+    </nav>
+    <div class="panel">
+        <router-view />
+    </div>
+</div>
+
+<script type="importmap">
+    {
+      "imports": {
+        "vue": "https://unpkg.com/vue@3/dist/vue.esm-browser.js",
+        "@vue/devtools-api":"https://unpkg.com/@vue/devtools-api@6.2.1/lib/esm/index.js"
+      }
+    }
+</script>
+
+<script type="module">
+    import * as vue from 'https://unpkg.com/vue@3/dist/vue.esm-browser.js';
+    import { createRouter, createWebHistory  } from 'https://unpkg.com/vue-router@4.0.15/dist/vue-router.esm-browser.js'
+
+    let MenuNode = {
+        template: '#menu_node_template',
+        name: 'MenuNode',
+        props: ['data', 'level'],
+        data() {
+            return {
+                expanded: false
+            }
+        },
+        methods: {
+            toggle_expand() {
+                this.expanded = !this.expanded
+            },
+            menu_name_style() {
+                return `padding-left: ${this.level}rem;` 
+            },
+            caret_class() {
+                if (this.expanded) {
+                    return 'fa-solid fa-caret-up rightmost'
+                } else {
+                    return 'fa-solid fa-caret-down rightmost'
+                }
+            }
+        }
+    }
+
+    let app = vue.createApp({
+        data() {
+            let items = [
+                {
+                    name: '菜单一',
+                    kids: [
+                        {
+                            name: '功能1',
+                            kids: [
+                                {
+                                    name: '特性a',
+                                    path: '/0'
+                                },
+                                {
+                                    name: '特性b',
+                                    path: '/1'
+                                }
+                            ]
+                        },
+                        {
+                            name: '功能2',
+                            path: '/2'
+                        }
+                    ]
+                },
+                {
+                    name: '菜单二',
+                    kids: [
+                        {
+                            name: '功能3',
+                            path: '/3'
+                        },
+                        {
+                            name: '功能4',
+                            path: '/4'
+                        }
+                    ]
+                }
+            ]
+
+            return {
+                items
+            }
+        },
+        components: {
+            MenuNode
+        }
+    })
+
+    let routes = [
+        {
+            path: '/',
+            component: {
+                template: 'init panel'
+            }
+        }
+    ]
+
+    for (let i = 0; i < 5; ++i) {
+        routes.push({
+            path: `/${i}`,
+            component: {
+                template: `panel ${i}`
+            }
+        })
+    }
+
+    const router = createRouter({
+        history: createWebHistory(),
+        routes,
+    })
+    
+    app.use(router).mount('#app')
+</script>
+        
