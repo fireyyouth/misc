@@ -90,7 +90,7 @@
         outline: none;
     }
     .load-status {
-        height: 3rem;
+        height: 2rem;
         text-align: center;
     }
 </style>
@@ -141,8 +141,7 @@
                 </div>
             </div>
         </div>
-        <div v-if="loading" class="load-status">loading ...</div>
-        <div v-if="end" class="load-status">no more</div>
+        <div v-if="load_status" class="load-status">{{ load_status }}</div>
     </div>
 </body>
 
@@ -152,38 +151,37 @@
     let app = vue.createApp({
         data() {
             return {
-                loading: false,
+                load_status: '',
                 end: false,
-                batch_size: 3,
                 preview_list: [],
-                preview_remain: []
+                scroll_id: '',
             }
         },
         methods: {
-            async load_preview_list() {
-                let rsp = await fetch('/preview_list')
-                this.preview_remain = await rsp.json()
-                this.preview_list = this.preview_remain.slice(0, this.batch_size)
-                this.preview_remain = this.preview_remain.slice(this.batch_size)
-            },
             async load_more() {
-                if (this.end || this.loading) {
-                    return
+                if (this.scroll_id) {
+                    if (this.load_status != '') {
+                        return
+                    }
+                    this.load_status = 'loading'
                 }
-                this.loading = true
-                await new Promise(r => setTimeout(r, 2000))
-                this.loading = false
-                if (this.preview_remain.length == 0) {
-                    this.end = true;
+                let rsp = await fetch('/preview_list?scroll_id=' + this.scroll_id)
+                let [body, _] = await Promise.all([
+                    rsp.json(),
+                    new Promise(resolve => setTimeout(resolve, 1000))]
+                );
+                this.preview_list = [].concat(this.preview_list, body.items)
+                this.scroll_id = body['scroll_id']
+
+                if (body.items.length == 0) {
+                    this.load_status = 'end';
                 } else {
-                    this.preview_list = [].concat(this.preview_list, this.preview_remain.slice(0, this.batch_size))
-                    this.preview_remain = this.preview_remain.slice(this.batch_size)
-                    console.log('appended', this.batch_size)
+                    this.load_status = '';
                 }
             }
         },
         mounted() {
-            this.load_preview_list()
+            this.load_more()
         }
     })
     let vm = app.mount('#app')
