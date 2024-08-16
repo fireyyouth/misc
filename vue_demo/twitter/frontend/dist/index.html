@@ -61,9 +61,6 @@
     .preview-item-header {
         display: flex;
     }
-    .preview-item-images {
-        
-    }
     dialog {
         margin-bottom: 0;
         outline: none;
@@ -92,6 +89,10 @@
         border-style: none;
         outline: none;
     }
+    .load-status {
+        height: 3rem;
+        text-align: center;
+    }
 </style>
 
 <body>
@@ -117,7 +118,7 @@
                     {{ item.text }}
                     <a v-if="item.hash" :href="'/content/' + item.hash">full</a>
                 </div>
-                <div class="preview-item-images">
+                <div>
                     <img v-for="img in item.img" :src="img" class="preview-image">
                 </div>
                 <div class="image-end"></div>
@@ -140,27 +141,55 @@
                 </div>
             </div>
         </div>
+        <div v-if="loading" class="load-status">loading ...</div>
+        <div v-if="end" class="load-status">no more</div>
     </div>
 </body>
+
 
 <script type="module">
     import * as vue from 'https://unpkg.com/vue@3/dist/vue.esm-browser.js';
     let app = vue.createApp({
         data() {
             return {
-                popped: false,
-                preview_list: []
+                loading: false,
+                end: false,
+                batch_size: 3,
+                preview_list: [],
+                preview_remain: []
             }
         },
         methods: {
             async load_preview_list() {
                 let rsp = await fetch('/preview_list')
-                this.preview_list = await rsp.json()
+                this.preview_remain = await rsp.json()
+                this.preview_list = this.preview_remain.slice(0, this.batch_size)
+                this.preview_remain = this.preview_remain.slice(this.batch_size)
+            },
+            async load_more() {
+                if (this.end || this.loading) {
+                    return
+                }
+                this.loading = true
+                await new Promise(r => setTimeout(r, 2000))
+                this.loading = false
+                if (this.preview_remain.length == 0) {
+                    this.end = true;
+                } else {
+                    this.preview_list = [].concat(this.preview_list, this.preview_remain.slice(0, this.batch_size))
+                    this.preview_remain = this.preview_remain.slice(this.batch_size)
+                    console.log('appended', this.batch_size)
+                }
             }
         },
         mounted() {
             this.load_preview_list()
         }
     })
-    app.mount('#app')
+    let vm = app.mount('#app')
+    window.onscroll = function(e) {
+        if ((window.innerHeight + Math.round(window.scrollY)) >= document.body.offsetHeight) {
+            vm.load_more()
+        }
+    };
 </script>
