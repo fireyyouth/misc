@@ -1,0 +1,254 @@
+<style>
+    .circle {
+        overflow: hidden;
+        border-radius: 50%;
+        height: 100%;
+        width: 100%;
+        box-sizing: border-box;
+        border: 1em solid red;
+        /*
+        */
+    }
+    .top-rect {
+        position: relative;
+
+        width: 100%;
+        height: 50%;
+    }
+    .text-rect {
+        position: absolute;
+        top: 0;
+        left: 0;
+        z-index: 1;
+
+        width: 100%;
+        height: 100%;
+
+        text-align: center;
+        color: white;
+    }
+    .bottom-rect {
+        overflow: hidden;
+        width: 100%;
+        height: 50%;
+        transform-origin: 50% 0;
+        --bottom-degree: calc(90deg + var(--pie-degree) / 2);
+        transform: rotate(var(--bottom-degree));
+    }
+    .inner-rect {
+        height: 100%;
+        width: 100%;
+        background-color: var(--pie-color);
+        transform-origin: 50% 0;
+        transform: rotate(calc(180deg - var(--pie-degree)));
+    }
+
+</style>
+
+
+<template id="pie_template">
+    <div class="circle">
+        <div class="top-rect">
+            <div class="text-rect">
+                {{ prize? prize.text: '' }}
+            </div>
+        </div>
+        <div class="bottom-rect">
+            <div class="inner-rect" :style="style()">
+            </div>
+        </div>
+    </div>
+</template>
+
+<style>
+    .machine {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        position: relative;
+    }
+    .board {
+        height: 30em;
+        width: 30em;
+        position: relative;
+        --pie-color: gold;
+    }
+    .sector {
+        height: 100%;
+        width: 100%;
+        position: absolute;
+        top: 0;
+        left: 0;
+    }
+    .button-box {
+        display: flex;
+        justify-content: center;
+        height: 4em;
+        width: 4em;
+        position: absolute;
+    }
+    .pointer {
+        height: 0;
+        width: 0;
+        border: 0.75em solid transparent;
+        border-bottom-color: red;
+        position: relative;
+        top: -3em;
+    }
+    .button {
+        height: 100%;
+        width: 100%;
+        font-size: 1.5em;
+        color: white;
+        outline: 0.5em solid red;
+        border-style: none;
+        border-radius: 50%;
+        background-color: red;
+        position: absolute;
+        top: 0;
+        left: 0;
+    }
+    .dialog-form {
+        margin: 0;
+        display: flex;
+        justify-content: center;
+    }
+</style>
+<template id="board_template">
+    <div class="machine">
+        <div class="board" ref="board">
+            <div v-for="(prize, index) in prize_list" class="sector">
+                <pie :prize="prize" :style="pie_style(index)"></pie>
+            </div>
+        </div>
+        <div class="button-box">
+            <div class="pointer"></div>
+            <button class="button" @click="animate">抽奖</button>
+        </div>
+    </div>
+    <dialog ref="dialog">
+        <div>
+            您的奖品是 {{ (this.answer === null)? '-' : this.prize_list[this.answer].text }}
+        </div>
+        <form method="dialog" class="dialog-form">
+            <button>确定</button>
+        </form>
+    </dialog>
+</template>
+
+<div id="app">
+    <board ref="board"></board>
+</div>
+
+<script type="module">
+    import * as vue from 'https://unpkg.com/vue@3/dist/vue.esm-browser.js';
+
+    let Pie = {
+        template: '#pie_template',
+        props: ['prize'],
+        methods: {
+            style() {
+                return this.prize? `background-color: ${this.prize.color};`: ''
+            }
+        }
+    }
+
+    let Board = {
+        template: '#board_template',
+        data() {
+            return {
+                prize_list: [
+                    {
+                        text: '一等奖',
+                        color: 'gold',
+                    },
+                    {
+                        text: '谢谢惠顾',
+                        color: 'skyblue'
+                    },
+                    {
+                        text: '二等奖',
+                        color: 'gold'
+                    },
+                    {
+                        text: '谢谢惠顾',
+                        color: 'skyblue'
+                    },
+                    {
+                        text: '三等奖',
+                        color: 'gold'
+                    },
+                    {
+                        text: '谢谢惠顾',
+                        color: 'skyblue'
+                    },
+                    {
+                        text: '纪念奖',
+                        color: 'gold'
+                    },
+                    {
+                        text: '谢谢惠顾',
+                        color: 'skyblue'
+                    }
+                ],
+                answer: null,
+                animating: false,
+            }
+        },
+        methods: {
+            pie_style(index) {
+                const sector_count = this.prize_list.length
+                const sector_degree = 360.0 / sector_count
+                return `transform: rotate(-${index * sector_degree}deg); --pie-degree: ${sector_degree}deg;`
+            },
+            animate() {
+                if (this.animating) {
+                    return
+                }
+                this.animating = true
+                this.answer = Math.floor(Math.random() * this.prize_list.length)
+
+                let start;
+                let board = this.$refs.board
+                let dialog = this.$refs.dialog
+                let target_degree = 360 * (3 + this.answer / this.prize_list.length)
+                let self = this;
+                function step(timeStamp) {
+                    if (start === undefined) {
+                        start = timeStamp;
+                    }
+                    const elapsed = timeStamp - start;
+                    
+                    function cubic_fn(p, q) {
+                        // f pass (0, 0) (p, q), f' pass (0, 0) (p, 0)
+                        return function(x) {
+                            return -2 * q * x * x * x / (p * p * p) + 3 * q * x * x / (p * p)
+                        }
+                    }
+
+                    const duration = 5000;
+                    const fn = cubic_fn(duration, target_degree)
+                    if (elapsed <= duration) {
+                        board.style = `transform: rotate(${fn(elapsed)}deg);`
+                        requestAnimationFrame(step)
+                    } else {
+                        dialog.showModal()
+                        self.animating =  false
+                    }
+                }
+                requestAnimationFrame(step)
+            }
+        },
+        components: {
+            Pie
+        }
+    }
+    
+    let app = vue.createApp({
+        components: {
+            Board
+        }
+    })
+
+    app.mount('#app')
+</script>
