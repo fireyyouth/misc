@@ -140,6 +140,41 @@
     <board ref="board"></board>
 </div>
 
+<style>
+    .tape {
+        background-color: whitesmoke;
+        overflow: hidden;
+        width: 2rch;
+        font-size: 2rem;
+        height: fit-content;
+        color: transparent;
+        border: 1px solid black;
+        position: relative;
+    }
+    .text {
+        vertical-align: middle;
+        color: black;
+        position: absolute;
+        top: 0;
+        animation: shift-right 5s linear infinite;
+    }
+    @keyframes shift-right {
+        from {
+            left: -20rch;
+        }
+        to {
+            left: 0;
+        }
+    }
+
+</style>
+<div class="tape">
+    x <!-- invisible placeholder for tape height -->
+    <div class="text">
+        09876543210
+    </div>
+</div>
+
 <script type="module">
     import * as vue from 'https://unpkg.com/vue@3/dist/vue.esm-browser.js';
 
