@@ -43,10 +43,13 @@
 
 .op {
   height: 2em;
-  cursor: pointer;
   color: red;
   display: flex;
   justify-content: space-around;
+}
+
+.op div {
+  cursor: pointer;
 }
 
 .invisible {

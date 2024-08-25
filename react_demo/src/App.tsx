@@ -1,12 +1,11 @@
 import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
 import './App.css'
 
 interface PostData {
   id: string,
   date: string,
-  content: string
+  content: string,
+  comments: string[]
 }
 
 function uuidv4() {
@@ -15,40 +14,54 @@ function uuidv4() {
   );
 }
 
-function Post({data, RemovePost}) {
-  let [op_visible, set_op_visible] = useState(false)
-  let [comment_visible, set_comment_visible] = useState(false)
+interface PostProps {
+  data: PostData,
+  removePost: (id: string) => void
+}
 
-  function op_class() {
-    return 'op ' + (op_visible? '' : 'invisible')
+function Post(props: PostProps) {
+  let [opVisible, setOpVisible] = useState(false)
+  let [commentList, setCommentList] = useState(Array.from(props.data.comments))
+  let [commentVisible, setCommentVisible] = useState(false)
+  let [commentStage, setCommentStage] = useState('')
+
+  function opClass() {
+    return 'op ' + (opVisible? '' : 'invisible')
   }
 
-  function toggle_comment() {
-    set_comment_visible(!comment_visible)
+  function toggleComment() {
+    setCommentVisible(!commentVisible)
+  }
+
+  function commitCommentStage() {
+    let cp = Array.from(commentList)
+    cp.push(commentStage)
+    setCommentList(cp)
+    setCommentStage('')
   }
 
   return (
-    <div className="post" onMouseOver={() => set_op_visible(true)} onMouseLeave={() => set_op_visible(false)}>
-      <h4>{data.date}</h4>
-      <p>{data.content}</p>
-      <div className={op_class()}>
-        <div onClick={() => RemovePost(data.id)}>
+    <div className="post" onMouseOver={() => setOpVisible(true)} onMouseLeave={() => setOpVisible(false)}>
+      <h4>{props.data.date}</h4>
+      <p>{props.data.content}</p>
+      <div className={opClass()}>
+        <div onClick={() => props.removePost(props.data.id)}>
           delete
         </div>
-        <div onClick={() => toggle_comment()}>
+        <div onClick={() => toggleComment()}>
           comment
         </div>
       </div>
-      {comment_visible &&
+      {commentVisible &&
         <>
           <div>
-            <input></input>
+            <input value={commentStage} onChange={e => setCommentStage(e.target.value)}></input>
             <div>
-              <button>comment</button>
+              <button onClick={commitCommentStage}>comment</button>
             </div>
           </div>
           <div>
-            {data.comments.map(c => <div key={uuidv4()}>bot: {c}</div>)}
+            {commentList.map(c => <div key={uuidv4()}>bot: {c}</div>)}
           </div>
         </>
       }
@@ -57,7 +70,7 @@ function Post({data, RemovePost}) {
 }
 
 function App() {
-  const [post_list, set_post_list] = useState([
+  const [postList, setPostList] = useState([
     {
       id: uuidv4(),
       date: '10.01',
@@ -77,41 +90,39 @@ function App() {
     }
   ])
 
-  let [stage, set_stage] = useState('')
+  let [stage, setStage] = useState('')
 
-  function delete_post(post_id: string) {
-    let cp = Array.from(post_list)
+  function removePost(postId: string) {
+    let cp = Array.from(postList)
     for (let i = 0; i < cp.length; ++i) {
-      if (cp[i].id == post_id) {
+      if (cp[i].id == postId) {
         cp.splice(i, 1)
         break
       }
     }
-    set_post_list(cp)
+    setPostList(cp)
   }
 
-  function stage_to_post() {
-    let cp = Array.from(post_list)
+  function commitStage() {
+    let cp = Array.from(postList)
     cp.push({
       id: uuidv4(),
       date: `10.${Math.floor(Math.random() * 10)}`,
       content: stage,
       comments: []
     })
-    set_stage('')
-    set_post_list(cp)
+    setStage('')
+    setPostList(cp)
   }
-
-  let post_items = post_list.map((e) => <Post key={e.id} data={e} RemovePost={delete_post} ></Post>)
 
   return (
     <>
       <div className="panel">
-        {post_items}
+        {postList.map((e) => <Post key={e.id} data={e} removePost={removePost} ></Post>)}
       </div>
       <div className="stage">
-        <textarea value={stage} onChange={e => set_stage(e.target.value)}></textarea>
-        <button onClick={() => stage_to_post()}>append</button>
+        <textarea value={stage} onChange={e => setStage(e.target.value)}></textarea>
+        <button onClick={() => commitStage()}>append</button>
       </div>
     </>
   )
