@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Vue with Element Plus</title>
+  <script src="https://unpkg.com/vue@3"></script>
+  <script src="https://unpkg.com/element-plus"></script>
+  <link rel="stylesheet" href="https://unpkg.com/element-plus/dist/index.css" />
+</head>
+<body>
+  <div id="app">
+    <h1>2025年03月2025年陕西省统一考试录用公务员 榆林市报考人数</h1>
+    <el-input
+      v-model="filterText"
+      placeholder="过滤关键词, 以空格分隔"
+      style="margin-bottom: 1rem; width: 300px;"
+    ></el-input>
+    <el-button @click="">
+      过滤
+    </el-button>
+    <h3>总共 {{ filteredData.length }} 条</h3>
+    <el-table :data="filteredData" style="width: 100%">
+      <el-table-column v-for="name in names" :key="name" :prop="name" :label="name" :sortable="name.includes('人数')" :formatter="name.includes('竞争') ? formatNumber: undefined" ></el-table-column>
+    </el-table>
+  </div>
+
+  <script>
+    const { createApp } = Vue;
+
+    createApp({
+      data() {
+        return {
+          filterText: "",
+          names: [],
+          fullData: []
+        };
+      },
+      computed: {
+        filteredData() {
+          const filterText = this.filterText;
+          return this.fullData.filter(function(item) {
+                console.log(item)
+                let joined = Object.values(item).join(' ');
+                return filterText.split(/s+/).every(k => joined.includes(k));
+          })
+        }
+      },
+      methods: {
+        formatNumber(row, column, value) {
+          return Number(value).toFixed(2)
+        }
+      },
+      async mounted() {
+        let rsp = await fetch('./info.json')
+        let rows = (await rsp.json()).rows
+        for (let row of rows) {
+                for (let key in row) {
+                    console.log(key)
+                    if (key.includes('人数')) {
+                        row[key] = Number(row[key])
+                        if (!isFinite(row[key])) {
+                           row[key] = 0
+                        }
+                    }
+                }
+                row['单名额竞争人数'] = row['报考人数'] / row['招聘人数']
+         }
+        this.fullData = rows
+        this.names = Object.keys(this.fullData[0])
+        console.log(this.names)
+        console.log(this.fullData)
+      }
+
+    }).use(ElementPlus).mount("#app");
+  </script>
+</body>
+</html>
