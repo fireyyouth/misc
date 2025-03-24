@@ -9,16 +9,52 @@
     <script src="vue.global.min.js"></script>
     <style>
         body {
-            font-family: Arial, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
             text-align: center;
-            background-color: #1e1e1e;
+            background-color: #1a1a1a;
             margin: 0;
             padding: 0;
-            color: lightgray;
+            color: #ffffff;
+            min-height: 100vh;
         }
 
         h1 {
-            margin-top: 20px;
+            margin: 0;
+            font-size: 20px;
+            font-weight: 500;
+            color: #ffffff;
+            display: inline-block;
+        }
+
+        .header-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 20px;
+            padding: 15px 20px;
+            background-color: #2a2a2a;
+            border-bottom: 1px solid #3a3a3a;
+            margin-bottom: 20px;
+        }
+
+        h3 {
+            font-weight: 500;
+            color: #ffffff;
+            margin: 0;
+            font-size: 16px;
+            display: inline-block;
+        }
+
+        .room-name {
+            color: #0e72ea;
+            font-weight: 500;
+            margin-left: 8px;
+        }
+
+        .user-count {
+            color: #2ecc71;
+            font-weight: 500;
+            margin-left: 4px;
         }
 
         .video-container {
@@ -26,56 +62,91 @@
             justify-content: center;
             gap: 20px;
             margin: 20px;
-            max-height: 70vh;
+            max-height: 75vh;
+            background-color: #2a2a2a;
+            padding: 20px;
+            border-radius: 12px;
         }
 
         video {
-            max-width: 45%;
-            height: 60vh;
-            border: 2px solid #ccc;
-            border-radius: 10px;
+            max-width: 48%;
+            height: 65vh;
+            border: none;
+            border-radius: 8px;
             background-color: #000;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         }
 
         dialog {
-            border-radius: 5px;
+            border-radius: 8px;
+            background-color: #2a2a2a;
+            border: none;
+            padding: 24px;
+            color: #ffffff;
+        }
+
+        dialog::backdrop {
+            background-color: rgba(0, 0, 0, 0.7);
         }
 
         button {
             margin: 20px 10px;
-            padding: 10px 20px;
+            padding: 12px 24px;
             font-size: 16px;
             cursor: pointer;
             border: none;
-            border-radius: 5px;
-            background-color: #007bff;
+            border-radius: 6px;
+            background-color: #0e72ea;
             color: white;
+            font-weight: 500;
+            transition: background-color 0.2s;
+        }
+
+        button:hover {
+            background-color: #0d5fc2;
         }
 
         button:disabled {
-            background-color: #ccc;
+            background-color: #4a4a4a;
             cursor: not-allowed;
+        }
+
+        input {
+            padding: 12px;
+            border: 1px solid #4a4a4a;
+            border-radius: 6px;
+            background-color: #333333;
+            color: #ffffff;
+            font-size: 16px;
+            width: 200px;
+            margin-right: 10px;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: #0e72ea;
         }
 
         textarea {
             width: 95%;
-            height: 20vh;
-        }
-
-        .room-name {
-            color: skyblue;
-        }
-
-        .user-count {
-            color: green;
+            height: 15vh;
+            background-color: #2a2a2a;
+            border: 1px solid #4a4a4a;
+            border-radius: 6px;
+            color: #ffffff;
+            padding: 12px;
+            font-family: monospace;
+            resize: none;
         }
     </style>
 </head>
 
 <body>
     <div id="app">
-
-        <h1>Video Chat Room <span class="room-name">{{ room }}</span></h1>
+        <div class="header-container">
+            <h1>room <span class="room-name">{{ room }}</span></h1>
+            <h3>online users: <span class="user-count">{{ user_list.length }}</span></h3>
+        </div>
 
         <dialog ref="dialog">
             <p>please enter room ID</p>
@@ -85,7 +156,6 @@
             </form>
         </dialog>
 
-        <h3>online users: <span class="user-count">{{ user_list.length }}</span></h3>
         <div class="video-container">
             <video ref="my_video" autoplay muted></video>
             <video ref="their_video" autoplay></video>
